@@ -61,12 +61,80 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function exportSelected()
     {
-        // Add export functionality here
+        if (empty($this->selectedMembers)) {
+            session()->flash('error', 'Please select members to export.');
+            return;
+        }
+
+        $members = ChurchMember::whereIn('id', $this->selectedMembers)->get();
+
+        $csvFileName = 'members-export-' . now()->format('Y-m-d-H-i-s') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename={$csvFileName}",
+        ];
+
+        $columns = [
+            'Name', 'Email', 'Telephone', 'Gender', 'Status', 'Occupation',
+            'Home Town', 'House Address', 'Date of Birth', 'Marital Status',
+            'Date Joined', 'First Visit', 'Baptism Status'
+        ];
+
+        $callback = function() use ($members, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($members as $member) {
+                fputcsv($file, [
+                    $member->name,
+                    $member->email,
+                    $member->telephone,
+                    $member->gender,
+                    $member->status,
+                    $member->occupation,
+                    $member->home_town,
+                    $member->house_address,
+                    $member->date_of_birth,
+                    $member->marital_status,
+                    $member->date_joined,
+                    $member->first_visit,
+                    $member->baptism
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function bulkDelete()
     {
-        // Add bulk delete functionality here
+        if (empty($this->selectedMembers)) {
+            session()->flash('error', 'Please select members to delete.');
+            return;
+        }
+
+        $members = ChurchMember::whereIn('id', $this->selectedMembers)->get();
+
+        foreach ($members as $member) {
+            // Delete associated files
+            if ($member->photo) {
+                Storage::disk('public')->delete($member->photo);
+            }
+            if ($member->secretary_signature) {
+                Storage::disk('public')->delete($member->secretary_signature);
+            }
+            if ($member->pastor_signature) {
+                Storage::disk('public')->delete($member->pastor_signature);
+            }
+        }
+
+        ChurchMember::whereIn('id', $this->selectedMembers)->delete();
+
+        $this->selectedMembers = [];
+        $this->selectAll = false;
+
+        session()->flash('success', count($members) . ' members deleted successfully.');
     }
 
     public function with(): array
