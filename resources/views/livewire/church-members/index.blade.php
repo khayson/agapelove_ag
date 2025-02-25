@@ -16,6 +16,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     public $perPage = 10;
     public $sortField = 'name';
     public $sortDirection = 'asc';
+    public $memberToDelete = null;
+    public $deleteConfirmation = '';
 
     public function sortBy($field)
     {
@@ -45,6 +47,47 @@ new #[Layout('components.layouts.app')] class extends Component {
                 ->orderBy($this->sortField, $this->sortDirection)
                 ->paginate($this->perPage),
         ];
+    }
+
+    public function confirmDelete(ChurchMember $member)
+    {
+        $this->memberToDelete = $member;
+        $this->deleteConfirmation = '';
+    }
+
+    public function cancelDelete()
+    {
+        $this->memberToDelete = null;
+        $this->deleteConfirmation = '';
+    }
+
+    public function delete()
+    {
+        if (!$this->memberToDelete) {
+            return;
+        }
+
+        if ($this->deleteConfirmation !== $this->memberToDelete->name) {
+            $this->addError('deleteConfirmation', 'The name you entered does not match.');
+            return;
+        }
+
+        // Delete associated files
+        if ($this->memberToDelete->photo) {
+            Storage::disk('public')->delete($this->memberToDelete->photo);
+        }
+        if ($this->memberToDelete->secretary_signature) {
+            Storage::disk('public')->delete($this->memberToDelete->secretary_signature);
+        }
+        if ($this->memberToDelete->pastor_signature) {
+            Storage::disk('public')->delete($this->memberToDelete->pastor_signature);
+        }
+
+        $this->memberToDelete->delete();
+        $this->memberToDelete = null;
+        $this->deleteConfirmation = '';
+
+        session()->flash('success', 'Member deleted successfully.');
     }
 }; ?>
 
@@ -225,6 +268,13 @@ new #[Layout('components.layouts.app')] class extends Component {
                                         </svg>
                                         Edit
                                     </flux:button>
+                                    <flux:button wire:click="confirmDelete({{ $member->id }})" variant="ghost" size="sm">
+                                        <svg class="mr-2 h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Delete
+                                    </flux:button>
                                 </div>
                             </td>
                         </tr>
@@ -243,4 +293,82 @@ new #[Layout('components.layouts.app')] class extends Component {
             {{ $members->links() }}
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    @if($memberToDelete)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">
+                                    Delete Member
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">
+                                        This action cannot be undone. This will permanently delete the member
+                                        <strong>{{ $memberToDelete->name }}</strong> and all associated data.
+                                    </p>
+                                    <div class="mt-4">
+                                        <p class="text-sm text-gray-700">
+                                            Please type <strong>{{ $memberToDelete->name }}</strong> to confirm.
+                                        </p>
+                                        <div class="mt-2">
+                                            <flux:input
+                                                wire:model="deleteConfirmation"
+                                                type="text"
+                                                class="w-full"
+                                                placeholder="Enter member name"
+                                            />
+                                            @error('deleteConfirmation')
+                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <flux:button
+                            wire:click="delete"
+                            variant="danger"
+                            class="w-full sm:ml-3 sm:w-auto"
+                        >
+                            Delete Member
+                        </flux:button>
+                        <flux:button
+                            wire:click="cancelDelete"
+                            variant="ghost"
+                            class="mt-3 w-full sm:mt-0 sm:w-auto"
+                        >
+                            Cancel
+                        </flux:button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Success Message Toast -->
+    @if (session()->has('success'))
+        <div
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 3000)"
+            class="fixed bottom-4 right-4 z-50 rounded-lg bg-green-500 px-4 py-2 text-white shadow-lg"
+        >
+            {{ session('success') }}
+        </div>
+    @endif
 </div>
