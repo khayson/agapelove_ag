@@ -19,6 +19,11 @@ new #[Layout('components.layouts.app')] class extends Component {
     public $showDeleteModal = false;
     public $memberToDelete = null;
     public $deleteConfirmation = '';
+    public $selectedMembers = [];
+    public $selectAll = false;
+    public $filterGender = '';
+    public $filterMaritalStatus = '';
+    public $dateRange = '';
 
     public function sortBy($field)
     {
@@ -30,23 +35,49 @@ new #[Layout('components.layouts.app')] class extends Component {
         }
     }
 
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedMembers = $this->members->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedMembers = [];
+        }
+    }
+
+    public function exportSelected()
+    {
+        // Add export functionality here
+    }
+
+    public function bulkDelete()
+    {
+        // Add bulk delete functionality here
+    }
+
     public function with(): array
     {
+        $query = ChurchMember::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($query) {
+                    $query->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%')
+                        ->orWhere('telephone', 'like', '%' . $this->search . '%')
+                        ->orWhere('home_town', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->status, fn($query) => $query->where('status', $this->status))
+            ->when($this->filterGender, fn($query) => $query->where('gender', $this->filterGender))
+            ->when($this->filterMaritalStatus, fn($query) => $query->where('marital_status', $this->filterMaritalStatus))
+            ->when($this->dateRange, function($query) {
+                // Add date range filter logic
+            });
+
         return [
-            'members' => ChurchMember::query()
-                ->when($this->search, function ($query) {
-                    $query->where(function ($query) {
-                        $query->where('name', 'like', '%' . $this->search . '%')
-                            ->orWhere('email', 'like', '%' . $this->search . '%')
-                            ->orWhere('telephone', 'like', '%' . $this->search . '%')
-                            ->orWhere('home_town', 'like', '%' . $this->search . '%');
-                    });
-                })
-                ->when($this->status, function ($query) {
-                    $query->where('status', $this->status);
-                })
-                ->orderBy($this->sortField, $this->sortDirection)
-                ->paginate($this->perPage),
+            'members' => $query->orderBy($this->sortField, $this->sortDirection)->paginate($this->perPage),
+            'totalMembers' => ChurchMember::count(),
+            'activeMembers' => ChurchMember::where('status', 'active')->count(),
+            'inactiveMembers' => ChurchMember::where('status', 'inactive')->count(),
+            'pendingMembers' => ChurchMember::where('status', 'pending')->count(),
         ];
     }
 
@@ -99,150 +130,179 @@ new #[Layout('components.layouts.app')] class extends Component {
     <!-- Stats Overview -->
     <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="text-sm font-medium text-muted-foreground">Total Members</div>
-            <div class="mt-2 text-2xl font-bold">{{ ChurchMember::count() }}</div>
-        </div>
-        <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="text-sm font-medium text-muted-foreground">Active Members</div>
-            <div class="mt-2 text-2xl font-bold text-green-600">
-                {{ ChurchMember::where('status', 'active')->count() }}
+            <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h3 class="text-sm font-medium">Total Members</h3>
             </div>
+            <p class="mt-2 text-2xl font-bold">{{ $totalMembers }}</p>
         </div>
+
         <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="text-sm font-medium text-muted-foreground">Inactive Members</div>
-            <div class="mt-2 text-2xl font-bold text-red-600">
-                {{ ChurchMember::where('status', 'inactive')->count() }}
+            <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-sm font-medium">Active Members</h3>
             </div>
+            <p class="mt-2 text-2xl font-bold">{{ $activeMembers }}</p>
         </div>
+
         <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="text-sm font-medium text-muted-foreground">Pending Members</div>
-            <div class="mt-2 text-2xl font-bold text-yellow-600">
-                {{ ChurchMember::where('status', 'pending')->count() }}
+            <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-sm font-medium">Pending Members</h3>
             </div>
+            <p class="mt-2 text-2xl font-bold">{{ $pendingMembers }}</p>
+        </div>
+
+        <div class="rounded-lg border bg-card p-4 shadow-sm">
+            <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-sm font-medium">Inactive Members</h3>
+            </div>
+            <p class="mt-2 text-2xl font-bold">{{ $inactiveMembers }}</p>
         </div>
     </div>
 
-    <!-- Search and Filters -->
-    <div class="mb-6 space-y-4 sm:flex sm:items-center sm:justify-between sm:space-y-0">
-        <div class="flex flex-1 items-center gap-4">
-            <div class="w-full max-w-sm">
-                <label for="search" class="sr-only">Search members</label>
-                <div class="relative">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <flux:input
-                        wire:model.live="search"
-                        id="search"
-                        placeholder="Search by name, email, phone..."
-                        type="search"
-                        class="pl-10"
-                    />
-                </div>
+    <!-- Actions and Filters -->
+    <div class="mb-6 space-y-4">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold">Church Members</h1>
+            <flux:button href="{{ route('church-members.create') }}" variant="primary" wire:navigate>
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add New Member
+            </flux:button>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <!-- Search -->
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <flux:input
+                    wire:model.live.debounce.300ms="search"
+                    type="search"
+                    placeholder="Search members..."
+                    class="pl-10"
+                />
             </div>
 
-            <flux:select wire:model.live="status" class="max-w-xs">
+            <!-- Filters -->
+            <flux:select wire:model.live="status">
                 <option value="">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="pending">Pending</option>
             </flux:select>
-        </div>
 
-        <div class="flex items-center gap-4">
-            <flux:select wire:model.live="perPage" class="max-w-xs">
-                <option value="10">10 per page</option>
-                <option value="25">25 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
+            <flux:select wire:model.live="filterGender">
+                <option value="">All Genders</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
             </flux:select>
 
-            <flux:button href="{{ route('church-members.create') }}" variant="primary" wire:navigate>
-                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add Member
-            </flux:button>
+            <flux:select wire:model.live="filterMaritalStatus">
+                <option value="">All Marital Status</option>
+                <option value="single">Single</option>
+                <option value="married">Married</option>
+                <option value="widowed">Widowed</option>
+                <option value="divorced">Divorced</option>
+            </flux:select>
         </div>
+
+        <!-- Bulk Actions -->
+        @if(count($selectedMembers) > 0)
+        <div class="flex items-center justify-between rounded-lg bg-primary/5 p-4">
+            <span class="text-sm">{{ count($selectedMembers) }} members selected</span>
+            <div class="flex gap-2">
+                <flux:button wire:click="exportSelected" variant="outline" size="sm">
+                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Export Selected
+                </flux:button>
+                <flux:button wire:click="bulkDelete" variant="danger" size="sm">
+                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Selected
+                </flux:button>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Members Table -->
     <div class="rounded-lg border bg-card shadow-sm">
-        <div class="relative w-full overflow-auto">
-            <table class="w-full caption-bottom text-sm">
-                <thead class="border-b bg-muted/50">
-                    <tr>
-                        <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                            <button wire:click="sortBy('name')" class="flex items-center gap-2">
-                                Photo & Name
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b">
+                        <th class="w-4 p-4">
+                            <flux:checkbox wire:model.live="selectAll" />
+                        </th>
+                        <th class="p-4 font-medium" wire:click="sortBy('name')" role="button">
+                            <div class="flex items-center gap-2">
+                                Name
                                 @if($sortField === 'name')
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="{{ $sortDirection === 'asc'
-                                                ? 'M8 15l4-4 4 4'
-                                                : 'M8 9l4 4 4-4' }}" />
+                                    <svg class="h-4 w-4 {{ $sortDirection === 'asc' ? '' : 'rotate-180' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                                     </svg>
                                 @endif
-                            </button>
+                            </div>
                         </th>
-                        <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Contact Info</th>
-                        <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                            <button wire:click="sortBy('status')" class="flex items-center gap-2">
-                                Status
-                                @if($sortField === 'status')
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="{{ $sortDirection === 'asc'
-                                                ? 'M8 15l4-4 4 4'
-                                                : 'M8 9l4 4 4-4' }}" />
-                                    </svg>
-                                @endif
-                            </button>
-                        </th>
-                        <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
+                        <th class="p-4 font-medium">Contact</th>
+                        <th class="p-4 font-medium">Status</th>
+                        <th class="p-4 font-medium">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="[&_tr:last-child]:border-0">
+                <tbody>
                     @forelse($members as $member)
-                        <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                        <tr class="border-b transition-colors hover:bg-muted/50">
+                            <td class="w-4 p-4">
+                                <flux:checkbox wire:model.live="selectedMembers" value="{{ $member->id }}" />
+                            </td>
                             <td class="p-4">
                                 <div class="flex items-center gap-3">
-                                    @if($member->photo_url)
-                                        <img src="{{ $member->photo_url }}" alt="{{ $member->name }}"
-                                            class="h-10 w-10 rounded-full object-cover" />
+                                    @if($member->photo)
+                                        <img src="{{ Storage::url($member->photo) }}" alt="{{ $member->name }}" class="h-10 w-10 rounded-full object-cover">
                                     @else
                                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                                            <span class="text-sm font-medium text-primary">
-                                                {{ substr($member->name, 0, 2) }}
-                                            </span>
+                                            <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
                                         </div>
                                     @endif
                                     <div>
                                         <div class="font-medium">{{ $member->name }}</div>
-                                        <div class="text-sm text-muted-foreground">
-                                            Member since {{ $member->created_at->format('M Y') }}
-                                        </div>
+                                        <div class="text-sm text-muted-foreground">{{ $member->home_town }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="p-4">
                                 <div class="space-y-1">
                                     @if($member->email)
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-2 text-sm">
                                             <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                             </svg>
                                             <span>{{ $member->email }}</span>
                                         </div>
                                     @endif
                                     @if($member->telephone)
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-2 text-sm">
                                             <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                             </svg>
                                             <span>{{ $member->telephone }}</span>
                                         </div>
@@ -257,34 +317,27 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <td class="p-4">
                                 <div class="flex items-center gap-2">
                                     <flux:button href="{{ route('church-members.show', $member) }}" variant="ghost" size="sm" wire:navigate>
-                                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
-                                        View
                                     </flux:button>
                                     <flux:button href="{{ route('church-members.edit', $member) }}" variant="ghost" size="sm" wire:navigate>
-                                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
-                                        Edit
                                     </flux:button>
                                     <flux:button wire:click="confirmDelete({{ $member->id }})" variant="ghost" size="sm">
-                                        <svg class="mr-2 h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <svg class="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
-                                        Delete
                                     </flux:button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-muted-foreground">
+                            <td colspan="5" class="p-4 text-center text-muted-foreground">
                                 No members found.
                             </td>
                         </tr>
@@ -293,8 +346,20 @@ new #[Layout('components.layouts.app')] class extends Component {
             </table>
         </div>
 
-        <div class="p-4 border-t">
-            {{ $members->links() }}
+        <div class="border-t p-4">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-muted-foreground">Show</span>
+                    <flux:select wire:model.live="perPage" class="w-20">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </flux:select>
+                    <span class="text-sm text-muted-foreground">entries</span>
+                </div>
+                {{ $members->links() }}
+            </div>
         </div>
     </div>
 
