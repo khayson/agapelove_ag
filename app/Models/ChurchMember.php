@@ -96,8 +96,6 @@ class ChurchMember extends Model
 
     public function getPhotoUrlAttribute()
     {
-        return $this->photo
-            ? Storage::url($this->photo)
-            : null;
+        return $this->photo ? Storage::url($this->photo) : null;
     }
 }
