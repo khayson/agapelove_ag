@@ -211,6 +211,105 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
         </div>
 
+        <!-- Occupation Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Occupation Information</h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:input wire:model="occupation" label="Occupation" />
+                <flux:textarea wire:model="occupation_details" label="Occupation Details" />
+            </div>
+        </div>
+
+        <!-- Family Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Family Information</h2>
+            <div class="space-y-6">
+                <!-- Mother's Information -->
+                <div>
+                    <h3 class="mb-2 font-medium">Mother's Information</h3>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <flux:input wire:model="mother_name" label="Name" />
+                        <flux:input wire:model="mother_home_town" label="Home Town" />
+                        <flux:input wire:model="mother_occupation" label="Occupation" />
+                        <flux:select wire:model="mother_alive" label="Is Mother Alive?" required>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </flux:select>
+                    </div>
+                </div>
+
+                <!-- Father's Information -->
+                <div>
+                    <h3 class="mb-2 font-medium">Father's Information</h3>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <flux:input wire:model="father_name" label="Name" />
+                        <flux:input wire:model="father_home_town" label="Home Town" />
+                        <flux:input wire:model="father_occupation" label="Occupation" />
+                        <flux:select wire:model="father_alive" label="Is Father Alive?" required>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </flux:select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Emergency Contact</h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:input wire:model="emergency_contact_name" label="Contact Name" />
+                <flux:input wire:model="emergency_contact_number" label="Contact Number" />
+                <flux:input wire:model="emergency_contact_relationship" label="Relationship" />
+                <flux:textarea wire:model="emergency_contact_address" label="Contact Address" />
+            </div>
+        </div>
+
+        <!-- Witness Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Witness Information</h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:input wire:model="witness_name" label="Witness Name" />
+                <flux:input wire:model="witness_contact" label="Witness Contact" />
+                <flux:textarea wire:model="witness_address" label="Witness Address" />
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Additional Information</h2>
+            <div class="grid gap-4">
+                <flux:textarea wire:model="additional_information" label="Additional Information" />
+                <flux:input wire:model="destination_of_transfer" label="Destination of Transfer" />
+                <flux:input wire:model="date_of_leaving_the_church" type="date" label="Date of Leaving" />
+                <flux:input wire:model="date_of_death" type="date" label="Date of Death" />
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Signatures</h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <h3 class="mb-2 font-medium">Secretary</h3>
+                    <flux:input wire:model="secretary_name" label="Secretary Name" />
+                    @if ($secretary_signature)
+                        <img src="{{ $secretary_signature->temporaryUrl() }}" class="mb-2 h-32 w-auto">
+                    @endif
+                    <flux:input type="file" wire:model="secretary_signature" label="Secretary Signature" accept="image/*" />
+                </div>
+                <div>
+                    <h3 class="mb-2 font-medium">Pastor</h3>
+                    <flux:input wire:model="pastor_name" label="Pastor Name" />
+                    @if ($pastor_signature)
+                        <img src="{{ $pastor_signature->temporaryUrl() }}" class="mb-2 h-32 w-auto">
+                    @endif
+                    <flux:input type="file" wire:model="pastor_signature" label="Pastor Signature" accept="image/*" />
+                </div>
+                <flux:input wire:model="application_date" type="date" label="Application Date" />
+            </div>
+        </div>
+
         <div class="flex justify-end gap-4">
             <flux:button href="{{ route('church-members.index') }}" variant="ghost" wire:navigate>
                 Cancel
