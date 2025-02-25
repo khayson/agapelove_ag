@@ -38,8 +38,22 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function updatedSelectAll($value)
     {
+        $query = ChurchMember::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($query) {
+                    $query->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%')
+                        ->orWhere('telephone', 'like', '%' . $this->search . '%')
+                        ->orWhere('home_town', 'like', '%' . $this->search . '%')
+                        ->orWhere('occupation', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->status, fn($query) => $query->where('status', $this->status))
+            ->when($this->filterGender, fn($query) => $query->where('gender', $this->filterGender))
+            ->when($this->filterMaritalStatus, fn($query) => $query->where('marital_status', $this->filterMaritalStatus));
+
         if ($value) {
-            $this->selectedMembers = $this->members->pluck('id')->map(fn($id) => (string) $id)->toArray();
+            $this->selectedMembers = $query->pluck('id')->map(fn($id) => (string) $id)->toArray();
         } else {
             $this->selectedMembers = [];
         }
