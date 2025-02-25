@@ -214,6 +214,41 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         session()->flash('success', 'Member deleted successfully.');
     }
+
+    public function generateCsvTemplate()
+    {
+        $csvFileName = 'members-template.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename={$csvFileName}",
+        ];
+
+        $columns = [
+            'Name', 'Gender', 'Home Town', 'House Address', 'Post Office Box',
+            'Region', 'Date of Birth', 'Nationality', 'Telephone', 'Email',
+            'Marital Status', 'Children', 'Occupation', 'Occupation Details',
+            'First Visit', 'Baptized By', 'Baptism', 'Date of Baptism',
+            'Date Converted', 'Mother Name', 'Mother Home Town',
+            'Mother Occupation', 'Mother Alive', 'Father Name',
+            'Father Home Town', 'Father Occupation', 'Father Alive',
+            'Destination of Transfer', 'Date of Leaving the Church',
+            'Date of Death', 'Witness Name', 'Witness Contact',
+            'Witness Address', 'Emergency Contact Name',
+            'Emergency Contact Number', 'Emergency Contact Address',
+            'Emergency Contact Relationship', 'Additional Information',
+            'Secretary Name', 'Pastor Name', 'Application Date', 'Status',
+            'Spiritual Gifts', 'Ministry Involvement', 'Preferred Contact Method',
+            'Date Joined'
+        ];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }; ?>
 
 <div class="space-y-6 p-4 md:p-6">
@@ -281,6 +316,9 @@ new #[Layout('components.layouts.app')] class extends Component {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h1 class="text-xl font-semibold md:text-2xl">Church Members</h1>
             <div class="flex gap-2">
+                <flux:button wire:click="generateCsvTemplate" variant="outline" size="sm">
+                    Generate CSV Template
+                </flux:button>
                 <flux:button href="{{ route('church-members.create') }}" variant="primary" class="w-full sm:w-auto" wire:navigate>
                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
