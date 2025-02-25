@@ -136,6 +136,180 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
         </div>
 
-        <!-- Additional sections as needed -->
+        <!-- Occupation Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Occupation Information</h2>
+            <div class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <div class="text-sm text-gray-500">Occupation</div>
+                        <div>{{ $member->occupation ?? 'Not specified' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Occupation Details</div>
+                        <div>{{ $member->occupation_details ?? 'Not specified' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Family Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Family Information</h2>
+            <div class="space-y-4">
+                <div>
+                    <h3 class="mb-2 font-medium">Mother's Information</h3>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <div class="text-sm text-gray-500">Name</div>
+                            <div>{{ $member->mother_name ?? 'Not specified' }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Home Town</div>
+                            <div>{{ $member->mother_home_town ?? 'Not specified' }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Occupation</div>
+                            <div>{{ $member->mother_occupation ?? 'Not specified' }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Status</div>
+                            <div>{{ ucfirst($member->mother_alive) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="mb-2 font-medium">Father's Information</h3>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <div class="text-sm text-gray-500">Name</div>
+                            <div>{{ $member->father_name ?? 'Not specified' }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Home Town</div>
+                            <div>{{ $member->father_home_town ?? 'Not specified' }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Occupation</div>
+                            <div>{{ $member->father_occupation ?? 'Not specified' }}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Status</div>
+                            <div>{{ ucfirst($member->father_alive) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Emergency Contact</h2>
+            <div class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <div class="text-sm text-gray-500">Name</div>
+                        <div>{{ $member->emergency_contact_name ?? 'Not specified' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Contact Number</div>
+                        <div>{{ $member->emergency_contact_number ?? 'Not specified' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Relationship</div>
+                        <div>{{ $member->emergency_contact_relationship ?? 'Not specified' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Address</div>
+                        <div>{{ $member->emergency_contact_address ?? 'Not specified' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Witness Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Witness Information</h2>
+            <div class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <div class="text-sm text-gray-500">Name</div>
+                        <div>{{ $member->witness_name ?? 'Not specified' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Contact</div>
+                        <div>{{ $member->witness_contact ?? 'Not specified' }}</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-sm text-gray-500">Address</div>
+                        <div>{{ $member->witness_address ?? 'Not specified' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Additional Information</h2>
+            <div class="space-y-4">
+                <div>
+                    <div class="text-sm text-gray-500">Additional Notes</div>
+                    <div>{{ $member->additional_information ?? 'Not specified' }}</div>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <div class="text-sm text-gray-500">Destination of Transfer</div>
+                        <div>{{ $member->destination_of_transfer ?? 'Not specified' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Date of Leaving</div>
+                        <div>{{ $member->date_of_leaving_the_church?->format('M d, Y') ?? 'Not specified' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Date of Death</div>
+                        <div>{{ $member->date_of_death?->format('M d, Y') ?? 'Not specified' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="rounded-lg border bg-card p-6 shadow-sm">
+            <h2 class="mb-4 text-lg font-semibold">Signatures</h2>
+            <div class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <h3 class="mb-2 font-medium">Secretary</h3>
+                        <div>
+                            <div class="text-sm text-gray-500">Name</div>
+                            <div>{{ $member->secretary_name ?? 'Not specified' }}</div>
+                        </div>
+                        @if($member->secretary_signature)
+                            <div class="mt-2">
+                                <div class="text-sm text-gray-500">Signature</div>
+                                <img src="{{ Storage::url($member->secretary_signature) }}" alt="Secretary Signature" class="mt-1 h-16">
+                            </div>
+                        @endif
+                    </div>
+                    <div>
+                        <h3 class="mb-2 font-medium">Pastor</h3>
+                        <div>
+                            <div class="text-sm text-gray-500">Name</div>
+                            <div>{{ $member->pastor_name ?? 'Not specified' }}</div>
+                        </div>
+                        @if($member->pastor_signature)
+                            <div class="mt-2">
+                                <div class="text-sm text-gray-500">Signature</div>
+                                <img src="{{ Storage::url($member->pastor_signature) }}" alt="Pastor Signature" class="mt-1 h-16">
+                            </div>
+                        @endif
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Application Date</div>
+                        <div>{{ $member->application_date?->format('M d, Y') ?? 'Not specified' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
