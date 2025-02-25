@@ -66,6 +66,15 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         $this->member = $churchMember;
         $this->fill($churchMember->toArray());
+
+        // Handle JSON fields properly
+        $this->spiritual_gifts = is_string($churchMember->spiritual_gifts)
+            ? json_decode($churchMember->spiritual_gifts)
+            : [];
+
+        $this->ministry_involvement = is_string($churchMember->ministry_involvement)
+            ? json_decode($churchMember->ministry_involvement)
+            : [];
     }
 
     public function save(): void
@@ -123,30 +132,30 @@ new #[Layout('components.layouts.app')] class extends Component {
             'date_joined' => 'nullable|date',
         ]);
 
-        // Handle file uploads
-        if ($this->photo) {
-            // Delete old photo if exists
-            if ($this->member->photo) {
-                Storage::disk('public')->delete($this->member->photo);
-            }
-            $validated['photo'] = $this->photo->store('member-photos', 'public');
+        if ($this->photo && !is_string($this->photo)) {
+            $validated['photo'] = $this->photo->store('photos', 'public');
+        } else {
+            unset($validated['photo']);
         }
-        if ($this->secretary_signature) {
-            if ($this->member->secretary_signature) {
-                Storage::disk('public')->delete($this->member->secretary_signature);
-            }
+
+        if ($this->secretary_signature && !is_string($this->secretary_signature)) {
             $validated['secretary_signature'] = $this->secretary_signature->store('signatures', 'public');
+        } else {
+            unset($validated['secretary_signature']);
         }
-        if ($this->pastor_signature) {
-            if ($this->member->pastor_signature) {
-                Storage::disk('public')->delete($this->member->pastor_signature);
-            }
+
+        if ($this->pastor_signature && !is_string($this->pastor_signature)) {
             $validated['pastor_signature'] = $this->pastor_signature->store('signatures', 'public');
+        } else {
+            unset($validated['pastor_signature']);
         }
+
+        $validated['spiritual_gifts'] = json_encode($this->spiritual_gifts);
+        $validated['ministry_involvement'] = json_encode($this->ministry_involvement);
 
         $this->member->update($validated);
 
-        $this->redirect(route('church-members.index'), navigate: true);
+        $this->redirect(route('church-members.show', $this->member), navigate: true);
     }
 
     public function delete(): void
@@ -183,7 +192,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                 <!-- Photo Upload -->
                 <div class="col-span-full">
-                    @if ($photo)
+                    @if ($photo && !is_string($photo))
                         <img src="{{ $photo->temporaryUrl() }}" class="mb-2 h-32 w-32 rounded-full object-cover">
                     @elseif ($member->photo)
                         <img src="{{ Storage::url($member->photo) }}" class="mb-2 h-32 w-32 rounded-full object-cover">
