@@ -366,12 +366,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <span class="hidden sm:inline">Add New Member</span>
                     <span class="sm:hidden">Add</span>
                 </flux:button>
-                <div class="flex gap-2">
+                <!-- <div class="flex gap-2">
                     <flux:input type="file" wire:model="importFile" label="Import CSV" accept=".csv" />
                     <flux:button wire:click="importCsv" variant="primary" size="sm">
                         Import Members
                     </flux:button>
-                </div>
+                </div> -->
             </div>
         </div>
 
