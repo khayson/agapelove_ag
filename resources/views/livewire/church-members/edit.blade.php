@@ -187,8 +187,14 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         // Handle dates
         $dates = [
-            'date_of_birth', 'first_visit', 'date_of_baptism', 'date_converted',
-            'date_of_leaving_the_church', 'date_of_death', 'application_date', 'date_joined'
+            'date_of_birth',
+            'first_visit',
+            'date_of_baptism',
+            'date_converted',
+            'date_of_leaving_the_church',
+            'date_of_death',
+            'application_date',
+            'date_joined'
         ];
 
         foreach ($dates as $date) {
@@ -221,14 +227,55 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         $this->redirect(route('church-members.index'), navigate: true);
     }
+
+    public function downloadMemberDetails()
+    {
+        $member = $this->member;
+
+        // Prepare the data for download
+        $data = [
+            'Name' => $member->name,
+            'Gender' => $member->gender,
+            'Home Town' => $member->home_town,
+            'House Address' => $member->house_address,
+            'Date of Birth' => $member->date_of_birth ? date('Y-m-d', strtotime($member->date_of_birth)) : '',
+            'Email' => $member->email,
+            'Telephone' => $member->telephone,
+            'Marital Status' => $member->marital_status,
+            'Occupation' => $member->occupation,
+            'Date Joined' => $member->date_joined ? date('Y-m-d', strtotime($member->date_joined)) : '',
+            // Add more fields as necessary
+        ];
+
+        // Generate CSV
+        $csvFileName = 'member-details-' . $member->id . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename={$csvFileName}",
+        ];
+
+        $callback = function () use ($data) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, array_keys($data)); // Header
+            fputcsv($file, $data); // Data
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }; ?>
 
 <div>
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex items-center justify-between space-x-4">
         <h1 class="text-2xl font-bold">Edit Member: {{ $member->name }}</h1>
-        <flux:button wire:click="delete" variant="danger" wire:confirm="Are you sure you want to delete this member?">
-            Delete Member
-        </flux:button>
+        <div class="flex space-x-2">
+            <flux:button wire:click="delete" variant="danger" wire:confirm="Are you sure you want to delete this member?">
+                Delete Member
+            </flux:button>
+            <flux:button wire:click="downloadMemberDetails" variant="primary">
+                Download Details
+            </flux:button>
+        </div>
     </div>
 
     <form wire:submit="save" class="space-y-8">
@@ -239,9 +286,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <!-- Photo Upload -->
                 <div class="col-span-full">
                     @if ($photo && !is_string($photo))
-                        <img src="{{ $photo->temporaryUrl() }}" class="mb-2 h-32 w-32 rounded-full object-cover">
+                    <img src="{{ $photo->temporaryUrl() }}" class="mb-2 h-32 w-32 rounded-full object-cover">
                     @elseif ($member->photo)
-                        <img src="{{ Storage::url($member->photo) }}" class="mb-2 h-32 w-32 rounded-full object-cover">
+                    <img src="{{ Storage::url($member->photo) }}" class="mb-2 h-32 w-32 rounded-full object-cover">
                     @endif
                     <flux:input type="file" wire:model="photo" label="Photo" accept="image/*" />
                 </div>
@@ -384,9 +431,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <h3 class="mb-2 font-medium">Secretary</h3>
                     <flux:input wire:model="secretary_name" label="Secretary Name" />
                     @if ($secretary_signature && !is_string($secretary_signature))
-                        <img src="{{ $secretary_signature->temporaryUrl() }}" class="mb-2 h-32 w-auto">
+                    <img src="{{ $secretary_signature->temporaryUrl() }}" class="mb-2 h-32 w-auto">
                     @elseif ($member->secretary_signature)
-                        <img src="{{ Storage::url($member->secretary_signature) }}" class="mb-2 h-32 w-auto">
+                    <img src="{{ Storage::url($member->secretary_signature) }}" class="mb-2 h-32 w-auto">
                     @endif
                     <flux:input type="file" wire:model="secretary_signature" label="Secretary Signature" accept="image/*" />
                 </div>
@@ -394,9 +441,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <h3 class="mb-2 font-medium">Pastor</h3>
                     <flux:input wire:model="pastor_name" label="Pastor Name" />
                     @if ($pastor_signature && !is_string($pastor_signature))
-                        <img src="{{ $pastor_signature->temporaryUrl() }}" class="mb-2 h-32 w-auto">
+                    <img src="{{ $pastor_signature->temporaryUrl() }}" class="mb-2 h-32 w-auto">
                     @elseif ($member->pastor_signature)
-                        <img src="{{ Storage::url($member->pastor_signature) }}" class="mb-2 h-32 w-auto">
+                    <img src="{{ Storage::url($member->pastor_signature) }}" class="mb-2 h-32 w-auto">
                     @endif
                     <flux:input type="file" wire:model="pastor_signature" label="Pastor Signature" accept="image/*" />
                 </div>
