@@ -6,6 +6,7 @@ use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Livewire\Volt\Component;
+use Illuminate\Support\Str;
 
 new #[Layout('components.layouts.app')] class extends Component {
     use WithPagination;
@@ -62,7 +63,8 @@ new #[Layout('components.layouts.app')] class extends Component {
                     $query->where('name', 'like', '%' . $this->search . '%')
                         ->orWhere('email', 'like', '%' . $this->search . '%')
                         ->orWhere('telephone', 'like', '%' . $this->search . '%')
-                        ->orWhere('home_town', 'like', '%' . $this->search . '%');
+                        ->orWhere('home_town', 'like', '%' . $this->search . '%')
+                        ->orWhere('occupation', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->status, fn($query) => $query->where('status', $this->status))
@@ -245,7 +247,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     <!-- Members Table -->
     <div class="rounded-lg border bg-card shadow-sm">
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead>
                     <tr class="border-b">
                         <th class="w-4 p-4">
@@ -307,12 +309,30 @@ new #[Layout('components.layouts.app')] class extends Component {
                                             <span>{{ $member->telephone }}</span>
                                         </div>
                                     @endif
+                                    @if($member->occupation)
+                                        <div class="flex items-center gap-2 text-sm">
+                                            <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                            <span>{{ $member->occupation }}</span>
+                                        </div>
+                                    @endif
+                                    @if($member->occupation_details)
+                                        <div class="text-sm text-muted-foreground">{{ Str::limit($member->occupation_details, 50) }}</div>
+                                    @endif
                                 </div>
                             </td>
                             <td class="p-4">
-                                <flux:badge :variant="$member->status === 'active' ? 'success' : ($member->status === 'pending' ? 'warning' : 'danger')">
+                                @php
+                                    $statusColors = [
+                                        'active' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                                        'inactive' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+                                        'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                                    ];
+                                @endphp
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $statusColors[$member->status] }}">
                                     {{ ucfirst($member->status) }}
-                                </flux:badge>
+                                </span>
                             </td>
                             <td class="p-4">
                                 <div class="flex items-center gap-2">
