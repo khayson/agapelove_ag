@@ -66,7 +66,9 @@ new #[Layout('components.layouts.app')] class extends Component {
             return;
         }
 
-        $members = ChurchMember::whereIn('id', $this->selectedMembers)->get();
+        $members = ChurchMember::whereIn('id', $this->selectedMembers)
+            ->orderBy('name', 'asc')
+            ->get();
 
         $csvFileName = 'members-export-' . now()->format('Y-m-d-H-i-s') . '.csv';
         $headers = [
@@ -77,7 +79,8 @@ new #[Layout('components.layouts.app')] class extends Component {
         $columns = [
             'Name', 'Email', 'Telephone', 'Gender', 'Status', 'Occupation',
             'Home Town', 'House Address', 'Date of Birth', 'Marital Status',
-            'Date Joined', 'First Visit', 'Baptism Status'
+            'Date Joined', 'First Visit', 'Baptism Status', 'Date of Baptism',
+            'Date Converted', 'Application Date'
         ];
 
         $callback = function() use ($members, $columns) {
@@ -94,11 +97,14 @@ new #[Layout('components.layouts.app')] class extends Component {
                     $member->occupation,
                     $member->home_town,
                     $member->house_address,
-                    $member->date_of_birth,
+                    $member->date_of_birth ? date('Y-m-d', strtotime($member->date_of_birth)) : '',
                     $member->marital_status,
-                    $member->date_joined,
-                    $member->first_visit,
-                    $member->baptism
+                    $member->date_joined ? date('Y-m-d', strtotime($member->date_joined)) : '',
+                    $member->first_visit ? date('Y-m-d', strtotime($member->first_visit)) : '',
+                    $member->baptism,
+                    $member->date_of_baptism ? date('Y-m-d', strtotime($member->date_of_baptism)) : '',
+                    $member->date_converted ? date('Y-m-d', strtotime($member->date_converted)) : '',
+                    $member->application_date ? date('Y-m-d', strtotime($member->application_date)) : ''
                 ]);
             }
             fclose($file);
