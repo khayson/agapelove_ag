@@ -88,6 +88,8 @@ class ChurchMember extends Model
         'application_date' => 'date',
         'first_visit' => 'date',
         'date_joined' => 'date',
+        'spiritual_gifts' => 'array',
+        'ministry_involvement' => 'array'
     ];
 
     protected $appends = ['photo_url'];
