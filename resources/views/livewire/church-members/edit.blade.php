@@ -65,7 +65,27 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function mount(ChurchMember $churchMember): void
     {
         $this->member = $churchMember;
-        $this->fill($churchMember->toArray());
+
+        // Format dates before filling
+        $dates = [
+            'date_of_birth',
+            'first_visit',
+            'date_of_baptism',
+            'date_converted',
+            'date_of_leaving_the_church',
+            'date_of_death',
+            'application_date',
+            'date_joined'
+        ];
+
+        $data = $churchMember->toArray();
+        foreach ($dates as $date) {
+            if (isset($data[$date])) {
+                $data[$date] = date('Y-m-d', strtotime($data[$date]));
+            }
+        }
+
+        $this->fill($data);
 
         // Handle JSON fields properly
         $this->spiritual_gifts = is_string($churchMember->spiritual_gifts)
