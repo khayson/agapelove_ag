@@ -12,7 +12,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-gray-500 dark:text-gray-400">Total Members</p>
-                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">1,234</p>
+                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">{{ $totalMembers }}</p>
                 </div>
             </div>
             <!-- New Members This Month -->
@@ -25,7 +25,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-gray-500 dark:text-gray-400">New This Month</p>
-                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">45</p>
+                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">{{ $newMembers }}</p>
                 </div>
             </div>
             <!-- Active Members -->
@@ -38,21 +38,20 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-gray-500 dark:text-gray-400">Active Members</p>
-                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">980</p>
+                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">{{ $activeMembers }}</p>
                 </div>
             </div>
             <!-- Inactive Members -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 flex items-center">
                 <div class="p-3 bg-red-500 rounded-full">
-                    <!-- Heroicon: User Remove (using X icon as a placeholder) -->
+                    <!-- Heroicon: User Remove (using a simple minus icon) -->
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M18 12H6" />
-                        <path d="M12 18V6" />
                     </svg>
                 </div>
                 <div class="ml-4">
                     <p class="text-gray-500 dark:text-gray-400">Inactive Members</p>
-                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">254</p>
+                    <p class="text-2xl font-semibold text-gray-700 dark:text-gray-300">{{ $inactiveMembers }}</p>
                 </div>
             </div>
         </div>
@@ -62,10 +61,8 @@
             <!-- Member Demographics Chart -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Members by Age Group</h2>
-                <!-- Chart Placeholder (replace with your chart component, e.g., Chart.js) -->
-                <div class="h-64">
-                    <x-placeholder-pattern class="h-full w-full" />
-                </div>
+                <!-- Chart Container -->
+                <canvas id="demographicsChart" class="h-64"></canvas>
             </div>
             <!-- Recent Registrations Table -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
@@ -80,26 +77,48 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr>
-                                <td class="px-4 py-2">John Doe</td>
-                                <td class="px-4 py-2">john@example.com</td>
-                                <td class="px-4 py-2">2025-02-20</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2">Jane Smith</td>
-                                <td class="px-4 py-2">jane@example.com</td>
-                                <td class="px-4 py-2">2025-02-19</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2">Michael Johnson</td>
-                                <td class="px-4 py-2">michael@example.com</td>
-                                <td class="px-4 py-2">2025-02-18</td>
-                            </tr>
-                            <!-- Add more rows as needed -->
+                            @foreach($recentRegistrations as $member)
+                                <tr>
+                                    <td class="px-4 py-2">{{ $member->name }}</td>
+                                    <td class="px-4 py-2">{{ $member->email }}</td>
+                                    <td class="px-4 py-2">{{ $member->created_at->format('Y-m-d') }}</td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Include Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('demographicsChart').getContext('2d');
+        // Convert demographics data from PHP to JavaScript
+        const demographicsData = @json($demographics);
+        const labels = demographicsData.map(item => item.age_group + 's');
+        const dataCounts = demographicsData.map(item => item.total);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Members Count',
+                    data: dataCounts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
 </x-layouts.app>
