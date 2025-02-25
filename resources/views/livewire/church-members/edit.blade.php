@@ -4,6 +4,7 @@ use App\Models\ChurchMember;
 use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use Livewire\Volt\Component;
+use Illuminate\Support\Facades\Storage;
 
 new #[Layout('components.layouts.app')] class extends Component {
     use WithFileUploads;
@@ -152,26 +153,51 @@ new #[Layout('components.layouts.app')] class extends Component {
             'date_joined' => 'nullable|date',
         ]);
 
+        // Handle file uploads
         if ($this->photo && !is_string($this->photo)) {
+            if ($this->member->photo) {
+                Storage::disk('public')->delete($this->member->photo);
+            }
             $validated['photo'] = $this->photo->store('photos', 'public');
         } else {
             unset($validated['photo']);
         }
 
         if ($this->secretary_signature && !is_string($this->secretary_signature)) {
+            if ($this->member->secretary_signature) {
+                Storage::disk('public')->delete($this->member->secretary_signature);
+            }
             $validated['secretary_signature'] = $this->secretary_signature->store('signatures', 'public');
         } else {
             unset($validated['secretary_signature']);
         }
 
         if ($this->pastor_signature && !is_string($this->pastor_signature)) {
+            if ($this->member->pastor_signature) {
+                Storage::disk('public')->delete($this->member->pastor_signature);
+            }
             $validated['pastor_signature'] = $this->pastor_signature->store('signatures', 'public');
         } else {
             unset($validated['pastor_signature']);
         }
 
-        $validated['spiritual_gifts'] = json_encode($this->spiritual_gifts);
-        $validated['ministry_involvement'] = json_encode($this->ministry_involvement);
+        // Handle arrays
+        $validated['spiritual_gifts'] = $this->spiritual_gifts ? json_encode($this->spiritual_gifts) : null;
+        $validated['ministry_involvement'] = $this->ministry_involvement ? json_encode($this->ministry_involvement) : null;
+
+        // Handle dates
+        $dates = [
+            'date_of_birth', 'first_visit', 'date_of_baptism', 'date_converted',
+            'date_of_leaving_the_church', 'date_of_death', 'application_date', 'date_joined'
+        ];
+
+        foreach ($dates as $date) {
+            if (isset($validated[$date]) && $validated[$date] !== '') {
+                $validated[$date] = date('Y-m-d', strtotime($validated[$date]));
+            } else {
+                $validated[$date] = null;
+            }
+        }
 
         $this->member->update($validated);
 
