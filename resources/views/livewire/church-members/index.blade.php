@@ -216,125 +216,148 @@ new #[Layout('components.layouts.app')] class extends Component {
     }
 }; ?>
 
-<div>
+<div class="space-y-6 p-4 md:p-6">
     <!-- Stats Overview -->
-    <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="flex items-center gap-2">
-                <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <h3 class="text-sm font-medium">Total Members</h3>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
+                    <svg class="h-5 w-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Total Members</p>
+                    <p class="text-2xl font-bold">{{ $totalMembers }}</p>
+                </div>
             </div>
-            <p class="mt-2 text-2xl font-bold">{{ $totalMembers }}</p>
         </div>
 
-        <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="flex items-center gap-2">
-                <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 class="text-sm font-medium">Active Members</h3>
+        <div class="rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="rounded-lg bg-green-100 p-2 dark:bg-green-900">
+                    <svg class="h-5 w-5 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Active Members</p>
+                    <p class="text-2xl font-bold">{{ $activeMembers }}</p>
+                </div>
             </div>
-            <p class="mt-2 text-2xl font-bold">{{ $activeMembers }}</p>
         </div>
 
-        <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="flex items-center gap-2">
-                <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 class="text-sm font-medium">Pending Members</h3>
+        <div class="rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="rounded-lg bg-yellow-100 p-2 dark:bg-yellow-900">
+                    <svg class="h-5 w-5 text-yellow-600 dark:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Pending Members</p>
+                    <p class="text-2xl font-bold">{{ $pendingMembers }}</p>
+                </div>
             </div>
-            <p class="mt-2 text-2xl font-bold">{{ $pendingMembers }}</p>
         </div>
 
-        <div class="rounded-lg border bg-card p-4 shadow-sm">
-            <div class="flex items-center gap-2">
-                <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 class="text-sm font-medium">Inactive Members</h3>
+        <div class="rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="rounded-lg bg-red-100 p-2 dark:bg-red-900">
+                    <svg class="h-5 w-5 text-red-600 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-muted-foreground">Inactive Members</p>
+                    <p class="text-2xl font-bold">{{ $inactiveMembers }}</p>
+                </div>
             </div>
-            <p class="mt-2 text-2xl font-bold">{{ $inactiveMembers }}</p>
         </div>
     </div>
 
     <!-- Actions and Filters -->
-    <div class="mb-6 space-y-4">
-        <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-bold">Church Members</h1>
-            <flux:button href="{{ route('church-members.create') }}" variant="primary" wire:navigate>
-                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Add New Member
-            </flux:button>
+    <div class="space-y-4 rounded-xl border bg-card p-4 shadow-sm">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h1 class="text-xl font-semibold md:text-2xl">Church Members</h1>
+            <div class="flex gap-2">
+                <flux:button href="{{ route('church-members.create') }}" variant="primary" class="w-full sm:w-auto" wire:navigate>
+                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="hidden sm:inline">Add New Member</span>
+                    <span class="sm:hidden">Add</span>
+                </flux:button>
+            </div>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <!-- Search -->
+        <!-- Filters Grid -->
+        <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <!-- Search with debounce -->
             <div class="relative">
-                <svg class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <flux:input
+                <input
                     wire:model.live.debounce.300ms="search"
                     type="search"
                     placeholder="Search members..."
-                    class="pl-10"
+                    class="w-full rounded-lg border bg-white pl-10 pr-4 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary dark:bg-gray-900"
                 />
+                <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
 
-            <!-- Filters -->
-            <flux:select wire:model.live="status">
-                <option value="">All Status</option>
+            <!-- Status Filter -->
+            <flux:select wire:model.live="status" class="w-full">
+                <option value="">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="pending">Pending</option>
             </flux:select>
 
-            <flux:select wire:model.live="filterGender">
+            <!-- Gender Filter -->
+            <flux:select wire:model.live="filterGender" class="w-full">
                 <option value="">All Genders</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
-                <option value="other">Other</option>
             </flux:select>
 
-            <flux:select wire:model.live="filterMaritalStatus">
-                <option value="">All Marital Status</option>
+            <!-- Marital Status Filter -->
+            <flux:select wire:model.live="filterMaritalStatus" class="w-full">
+                <option value="">All Marital Statuses</option>
                 <option value="single">Single</option>
                 <option value="married">Married</option>
-                <option value="widowed">Widowed</option>
                 <option value="divorced">Divorced</option>
+                <option value="widowed">Widowed</option>
             </flux:select>
         </div>
+    </div>
 
-        <!-- Bulk Actions -->
-        @if(count($selectedMembers) > 0)
-        <div class="flex items-center justify-between rounded-lg bg-primary/5 p-4">
-            <span class="text-sm">{{ count($selectedMembers) }} members selected</span>
+    <!-- Selected Actions Bar -->
+    @if (count($selectedMembers) > 0)
+    <div class="sticky top-0 z-10 rounded-xl border bg-white p-4 shadow-sm dark:bg-gray-900">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span class="text-sm font-medium">{{ count($selectedMembers) }} members selected</span>
             <div class="flex gap-2">
-                <flux:button wire:click="exportSelected" variant="outline" size="sm">
+                <flux:button wire:click="exportSelected" variant="outline" size="sm" class="flex-1 sm:flex-none">
                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Export Selected
+                    Export
                 </flux:button>
-                <flux:button wire:click="bulkDelete" variant="danger" size="sm">
+                <flux:button wire:click="bulkDelete" variant="danger" size="sm" class="flex-1 sm:flex-none">
                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    Delete Selected
+                    Delete
                 </flux:button>
             </div>
         </div>
-        @endif
     </div>
+    @endif
 
-    <!-- Members Table -->
-    <div class="rounded-lg border bg-card shadow-sm">
-        <div class="overflow-x-auto">
+    <!-- Members Table/Grid -->
+    <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div class="min-w-full overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead>
                     <tr class="border-b">
