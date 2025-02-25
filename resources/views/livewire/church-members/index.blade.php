@@ -50,9 +50,9 @@ new #[Layout('components.layouts.app')] class extends Component {
         ];
     }
 
-    public function confirmDelete(ChurchMember $member)
+    public function confirmDelete($memberId)
     {
-        $this->memberToDelete = $member;
+        $this->memberToDelete = ChurchMember::find($memberId);
         $this->deleteConfirmation = '';
         $this->showDeleteModal = true;
     }
@@ -298,87 +298,79 @@ new #[Layout('components.layouts.app')] class extends Component {
         </div>
     </div>
 
-    <x-modal wire:model="showDeleteModal">
-        <div class="p-6">
-            <div class="flex items-start space-x-4">
-                <!-- Warning Icon -->
-                <div class="flex-shrink-0">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+    <!-- Delete Modal -->
+    <div x-show="$wire.showDeleteModal"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="modal-title"
+         role="dialog"
+         aria-modal="true">
+        <div class="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 dark:bg-gray-800 bg-opacity-75 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <!-- Modal panel -->
+            <div class="relative inline-block transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+                <div class="bg-white dark:bg-gray-900 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <!-- Modal content -->
+                    <div class="sm:flex sm:items-start">
+                        <!-- Warning Icon -->
+                        <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100" id="modal-title">Delete Member</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    This action cannot be undone. This will permanently delete the member
+                                    <strong>{{ $memberToDelete?->name }}</strong> and all associated data.
+                                </p>
+                                <div class="mt-4">
+                                    <label for="confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Please type <strong>{{ $memberToDelete?->name }}</strong> to confirm.
+                                    </label>
+                                    <div class="mt-1">
+                                        <flux:input
+                                            wire:model.live="deleteConfirmation"
+                                            type="text"
+                                            id="confirmation"
+                                            class="w-full"
+                                            placeholder="Enter member name"
+                                        />
+                                        @error('deleteConfirmation')
+                                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Content -->
-                <div class="flex-1">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900">
+                <!-- Modal Actions -->
+                <div class="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                    <flux:button
+                        wire:click="delete"
+                        variant="danger"
+                        class="w-full sm:ml-3 sm:w-auto"
+                        :disabled="$deleteConfirmation !== ($memberToDelete?->name ?? '')"
+                    >
                         Delete Member
-                    </h3>
-
-                    <div class="mt-2 space-y-4">
-                        <!-- Warning Message -->
-                        <div class="rounded-md bg-red-50 p-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm text-red-700">
-                                        This action cannot be undone. This will permanently delete the member
-                                        <strong>{{ $memberToDelete?->name }}</strong> and all associated data.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Confirmation Input -->
-                        <div>
-                            <label for="confirmation" class="block text-sm font-medium text-gray-700">
-                                Please type <strong>{{ $memberToDelete?->name }}</strong> to confirm.
-                            </label>
-                            <div class="mt-1">
-                                <flux:input
-                                    wire:model="deleteConfirmation"
-                                    type="text"
-                                    id="confirmation"
-                                    class="w-full"
-                                    placeholder="Enter member name"
-                                />
-                                @error('deleteConfirmation')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
+                    </flux:button>
+                    <flux:button
+                        wire:click="cancelDelete"
+                        variant="ghost"
+                        class="mt-3 w-full sm:mt-0 sm:w-auto"
+                    >
+                        Cancel
+                    </flux:button>
                 </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="mt-6 flex justify-end space-x-3">
-                <flux:button
-                    wire:click="cancelDelete"
-                    variant="ghost"
-                >
-                    Cancel
-                </flux:button>
-                <flux:button
-                    wire:click="delete"
-                    variant="danger"
-                    :disabled="$deleteConfirmation !== ($memberToDelete?->name ?? '')"
-                >
-                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete Member
-                </flux:button>
             </div>
         </div>
-    </x-modal>
+    </div>
 
     <!-- Success Toast -->
     @if (session()->has('success'))
