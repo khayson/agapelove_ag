@@ -25,6 +25,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public $filterGender = '';
     public $filterMaritalStatus = '';
     public $dateRange = '';
+    public $importFile;
 
     public function sortBy($field)
     {
@@ -249,6 +250,45 @@ new #[Layout('components.layouts.app')] class extends Component {
 
         return response()->stream($callback, 200, $headers);
     }
+
+    public function importCsv()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:csv,txt|max:2048', // 2MB Max
+        ]);
+
+        $filePath = $this->importFile->store('imports');
+
+        $csvData = array_map('str_getcsv', file(storage_path('app/' . $filePath)));
+
+        // Assuming the first row contains the headers
+        $headers = array_shift($csvData);
+
+        foreach ($csvData as $row) {
+            $data = array_combine($headers, $row);
+
+            ChurchMember::create([
+                'name' => $data['Name'],
+                'email' => $data['Email'],
+                'telephone' => $data['Telephone'],
+                'gender' => $data['Gender'],
+                'status' => $data['Status'],
+                'occupation' => $data['Occupation'],
+                'home_town' => $data['Home Town'],
+                'house_address' => $data['House Address'],
+                'date_of_birth' => $data['Date of Birth'] ? date('Y-m-d', strtotime($data['Date of Birth'])) : null,
+                'marital_status' => $data['Marital Status'],
+                'date_joined' => $data['Date Joined'] ? date('Y-m-d', strtotime($data['Date Joined'])) : null,
+                'first_visit' => $data['First Visit'] ? date('Y-m-d', strtotime($data['First Visit'])) : null,
+                'baptism' => $data['Baptism Status'],
+                'date_of_baptism' => $data['Date of Baptism'] ? date('Y-m-d', strtotime($data['Date of Baptism'])) : null,
+                'date_converted' => $data['Date Converted'] ? date('Y-m-d', strtotime($data['Date Converted'])) : null,
+                'application_date' => $data['Application Date'] ? date('Y-m-d', strtotime($data['Application Date'])) : null,
+            ]);
+        }
+
+        session()->flash('success', 'Members imported successfully.');
+    }
 }; ?>
 
 <div class="space-y-6 p-4 md:p-6">
@@ -326,6 +366,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <span class="hidden sm:inline">Add New Member</span>
                     <span class="sm:hidden">Add</span>
                 </flux:button>
+                <div class="flex gap-2">
+                    <flux:input type="file" wire:model="importFile" label="Import CSV" accept=".csv" />
+                    <flux:button wire:click="importCsv" variant="primary" size="sm">
+                        Import Members
+                    </flux:button>
+                </div>
             </div>
         </div>
 
