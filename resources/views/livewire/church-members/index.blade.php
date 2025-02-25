@@ -357,7 +357,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     <!-- Members Table/Grid -->
     <div class="overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div class="min-w-full overflow-x-auto">
+        <div class="max-h-96 overflow-y-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead>
                     <tr class="border-b">
